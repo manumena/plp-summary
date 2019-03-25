@@ -1,0 +1,46 @@
+\section{Practica 0}
+
+\subsection{}
+null :: Foldable t $\Rightarrow$ t a $\rightarrow$ Bool
+
+Chequea si la estructura es nula \\
+
+head :: [a] $\rightarrow$ a
+
+Devuelve el primer elemento de la lista, mientras sea no vacía \\
+
+tail :: [a] $\rightarrow$ a
+
+Devuelve el último elemento de la lista, mientras sea no vacía \\
+
+init :: [a] $\rightarrow$ [a]
+
+Devuelve todos los elementos de la lista excepto el último, mientras sea no vacía \\
+
+last :: [a] $\rightarrow$ [a]
+
+Devuelve todos los elementos de la lista excepto el primero, mientras sea no vacía \\
+
+take :: Int $\rightarrow$ [a] $\rightarrow$ [a]
+
+Devuelve los primeros n elementos de la lista \\
+
+drop :: Int $\rightarrow$ [a] $\rightarrow$ [a]
+
+Devuelve una lista sin sus primeros n elementos \\
+
+(++) :: [a] $\rightarrow$ [a] $\rightarrow$ [a]
+
+Concatena ambas listas. Si la primera lista es infinita, devuelve la primera \\
+
+concat :: Foldable t $\Rightarrow$ t [a] $\rightarrow$ [a]
+
+The concatenation of all the elements of a container of lists \\
+
+(!!) :: [a] $\rightarrow$ Int $\rightarrow$ a
+
+Devuelve el n-ésimo elemento \\
+
+elem :: Eq a $\Rightarrow$ a $\rightarrow$ t a $\rightarrow$ Bool
+
+Devuelve si el elemento ocurre en la estructura

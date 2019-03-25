@@ -1,0 +1,65 @@
+% ALGUNOS PAQUETES REQUERIDOS (EN UBUNTU): %
+% ========================================
+% %
+% texlive-latex-base %
+% texlive-latex-recommended %
+% texlive-fonts-recommended %
+% texlive-latex-extra %
+% texlive-lang-spanish (en ubuntu 13.10) %
+% ******************************************************** %
+
+\documentclass[a4paper]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage[pdftex]{graphicx}
+\usepackage{sidecap}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{makeidx}
+\usepackage{float}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{amsfonts}
+\usepackage{sectsty}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{enumitem}
+
+% Para ver los marcos
+% \usepackage{showframe}
+
+\newcommand{\ord}{\ensuremath{\operatorname{O}}}
+\newcommand{\nat}{\ensuremath{\mathbb{N}}}
+\renewcommand{\thesubsubsection}{\thesubsection.\alph{subsubsection}}
+
+% Lemas, definiciones, etc.
+\theoremstyle{remark}
+\newtheorem*{obs}{Observación}
+\newtheorem*{nota}{Notación}
+\newtheorem*{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem*{defi}{Definición}
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lema}{Lema}
+\newtheorem{prop}{Propiedad}
+\input{codesnippet}
+\input{layout}
+
+\begin{document}
+
+\title{Paradigmas de Lenguajes de la Programación}
+\author{Manuel Mena}
+\maketitle
+
+\tableofcontents
+
+\newpage
+\input{practica0.tex}
+
+\end{document}
