@@ -3,20 +3,6 @@
 -- Definiciones de tipos
 
 data AB a = Nil | Bin (AB a) a (AB a) deriving (Eq, Show) 
-
-recAB :: b -> (a -> AB a -> AB a -> b -> b -> b) -> AB a -> b
-recAB z f Nil = z
-recAB z f (Bin i v d) = f v i d (recAB z f i) (recAB z f d)  
-
-foldAB :: b -> (a -> b -> b -> b) -> AB a -> b
-foldAB z f ab = recAB z (\v i d recI recD -> f v recI recD) ab
-
-mapAB :: (a -> b) -> AB a -> AB b
-mapAB f = foldAB Nil (\v recI recD -> Bin recI (f v) recD)
-
---suma = recAB 0 (\v _ _ recI recD -> v + recI + recD) 
-suma = foldAB 0 (\v recI recD -> v + recI + recD) 
-
 -- instance Show a => Show (AB a) where
 -- show t = padAB t 0 0
 
@@ -56,37 +42,48 @@ suma = foldAB 0 (\v recI recD -> v + recI + recD)
 -- ab8 = Bin (mapAB (*2) ab8) 1 (mapAB ((+1) . (*2)) ab8)
 
 -- -- Ejercicios
+-- EJ 1
+recAB :: b -> (a -> AB a -> AB a -> b -> b -> b) -> AB a -> b
+recAB z f Nil = z
+recAB z f (Bin i v d) = f v i d (recAB z f i) (recAB z f d)  
 
--- --recAB :: 
--- recAB = undefined
+foldAB :: b -> (a -> b -> b -> b) -> AB a -> b
+foldAB z f ab = recAB z (\v i d recI recD -> f v recI recD) ab
 
--- --foldAB 
--- foldAB = undefined
+-- EJ 2
+mapAB :: (a -> b) -> AB a -> AB b
+mapAB f = foldAB Nil (\v recI recD -> Bin recI (f v) recD)
 
--- mapAB :: (a -> b) -> AB a -> AB b
--- mapAB = undefined
-
---foldAB :: b -> (a -> b -> b -> b) -> AB a -> b
-
+-- EJ 3
 nilOCumple :: (a -> a -> Bool) -> a -> AB a -> Bool
 nilOCumple f e Nil = True
 nilOCumple f e (Bin i v d) = f e v
 
+-- EJ 4
 esABB :: Ord a => AB a -> Bool
 esABB = recAB True (\v abI abD recI recD -> recI && recD && ((comparar v abI (>)) && (comparar v abD (<))))
         where comparar v ab fcomp = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
         -- where comparar v ab fcomp = recAB True (\raiz abI abD recI recD -> (fcomp v raiz) && (nilOCumple fcomp v abI) && (nilOCumple fcomp v abD) && recI && recD) ab
 
-esHeap :: Ord a => (a -> a -> Bool) -> AB a ->  Bool
+esHeap :: (a -> a -> Bool) -> AB a ->  Bool
 esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v abI) && (comparar v abD))
         where comparar v ab = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
 
--- (nilOCumple f v recI) && (nilOCumple f v recD))
--- esHeap :: (a -> a -> Bool)  -> AB a -> Bool
--- esHeap = undefined
 
--- completo :: AB a -> Bool
--- completo = undefined
+-- ejemplos de uso de rec y fold
+sumaRec = recAB 0 (\v _ _ recI recD -> v + recI + recD) 
+sumaFold = foldAB 0 (\v recI recD -> v + recI + recD) 
+-- 
+
+-- EJ 5
+altura :: AB a -> Int
+altura = foldAB 0 (\v recI recD -> 1 + max recI recD)
+
+cantidadDeNodos :: AB a -> Int
+cantidadDeNodos = foldAB 0 (\v recI recD -> 1 + recI + recD)
+
+completo :: AB a -> Bool
+completo ab = (2^altura ab) - 1 == cantidadDeNodos ab
 
 -- insertarABB :: Ord a => AB a -> a -> AB a
 -- insertarABB = undefined
