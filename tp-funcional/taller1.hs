@@ -15,8 +15,8 @@ data AB a = Nil | Bin (AB a) a (AB a) deriving (Eq, Show)
 -- padAB = foldAB (const $ const "") (\ri x rd n base ->let l = length $ show x in pad n ++ show x ++ ri 4 (base+l) ++ "\n" ++ rd (n+4+base+l) base)
 
 -- Crea una hoja de un árbol binario AB
---abHoja :: a -> AB a
---abHoja x = Bin Nil x Nil
+abHoja :: a -> AB a
+abHoja x = Bin Nil x Nil
 
 -- -- Devuelve una lista con los elementos de los nodos de un árbol binario AB recorridos en profundidad de izquierda a derecha
 -- inorder :: AB a -> [a]    
@@ -63,7 +63,6 @@ nilOCumple f e (Bin i v d) = f e v
 esABB :: Ord a => AB a -> Bool
 esABB = recAB True (\v abI abD recI recD -> recI && recD && ((comparar v abI (>)) && (comparar v abD (<))))
         where comparar v ab fcomp = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
-        -- where comparar v ab fcomp = recAB True (\raiz abI abD recI recD -> (fcomp v raiz) && (nilOCumple fcomp v abI) && (nilOCumple fcomp v abD) && recI && recD) ab
 
 esHeap :: (a -> a -> Bool) -> AB a ->  Bool
 esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v abI) && (comparar v abD))
@@ -85,8 +84,38 @@ cantidadDeNodos = foldAB 0 (\v recI recD -> 1 + recI + recD)
 completo :: AB a -> Bool
 completo ab = (2^altura ab) - 1 == cantidadDeNodos ab
 
--- insertarABB :: Ord a => AB a -> a -> AB a
--- insertarABB = undefined
+-- EJ 6
+raiz :: AB a -> a
+raiz (Bin i v d) = v
+-- raiz Nil = ERROR
+
+insertarABB :: Ord a => AB a -> a -> AB a
+insertarABB Nil e = abHoja e
+insertarABB ab e = insertarABBAux e (raiz ab) ab
+
+insertarABBAux :: Ord a => a -> a -> AB a -> AB a
+insertarABBAux e r = foldAB Nil (\v recI recD -> if (v<r && e<r) || (v>r && e>r) then fijateDondeVa v recI recD else (Bin recI v recD))
+    where fijateDondeVa v recI recD = (Bin (if e <= v && recI == Nil then (abHoja e) else recI) v (if e > v && recD == Nil then (abHoja e) else recD))
+
+    -- where fijateDondeVa = (if e > v then agregoADerONada else agregoAIzqONada)
+
+
+
+
+-- insertarABB e r = foldAB Nil (\v recI recD -> if r>v then (if  then (Bin (abHoja e) v recD) else (Bin recI v (abHoja e))) else (Bin recI v recD))
+
+-- if nil:
+    -- Bin nil e nil
+-- else:
+    -- if e < v_nodo:
+        -- Bin insertarABB() v_nodo tuviejaderecha
+    -- else:
+        -- Bin tuviejaizquierda v_nodo insertarABB()
+
+
+-- 
+
+
 
 -- insertarHeap :: (a -> a -> Bool) -> AB a -> a -> AB a
 -- insertarHeap undefined 
