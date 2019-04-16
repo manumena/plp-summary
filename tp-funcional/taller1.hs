@@ -87,39 +87,43 @@ completo ab = (2^altura ab) - 1 == cantidadDeNodos ab
 -- EJ 6
 raiz :: AB a -> a
 raiz (Bin i v d) = v
--- raiz Nil = ERROR
+
+izq :: AB a -> AB a
+izq Nil = Nil
+izq (Bin i v d) = i
+
+der :: AB a -> AB a
+der Nil = Nil
+der (Bin i v d) = d
+
+esNil :: AB a -> Bool
+esNil Nil = True
+esNil _ = False
 
 insertarABB :: Ord a => AB a -> a -> AB a
 insertarABB Nil e = abHoja e
 insertarABB ab e = insertarABBAux e (raiz ab) ab
 
 insertarABBAux :: Ord a => a -> a -> AB a -> AB a
-insertarABBAux e r = foldAB Nil (\v recI recD -> if (v<r && e<r) || (v>r && e>r) then fijateDondeVa v recI recD else (Bin recI v recD))
-    where fijateDondeVa v recI recD = (Bin (if e <= v && recI == Nil then (abHoja e) else recI) v (if e > v && recD == Nil then (abHoja e) else recD))
-
-    -- where fijateDondeVa = (if e > v then agregoADerONada else agregoAIzqONada)
+insertarABBAux e r = foldAB Nil (\v recI recD -> if (v<r && e<r) || (v>r && e>r) then insertar v recI recD else (Bin recI v recD))
+    where insertar v recI recD = (Bin (if e <= v && recI == Nil then (abHoja e) else recI) v (if e > v && recD == Nil then (abHoja e) else recD))
 
 
+insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
+insertarHeap f Nil e = abHoja e
+insertarHeap f ab e = heapify f (insertarHeapAux ab e)
 
+insertarHeapAux :: Ord a => AB a -> a -> AB a
+insertarHeapAux ab e = recAB (abHoja e) (\v abIzq abDer recI recD -> if tengoQueMeterADerecha abIzq abDer then (Bin abIzq v recD) else (Bin recI v abDer)) ab
+    where tengoQueMeterADerecha izq der = completo izq && (altura izq > altura der)
 
--- insertarABB e r = foldAB Nil (\v recI recD -> if r>v then (if  then (Bin (abHoja e) v recD) else (Bin recI v (abHoja e))) else (Bin recI v recD))
+heapify :: (a -> a -> Bool) -> AB a -> AB a
+heapify f = foldAB Nil (\v recI recD -> if giroConIzq v recI then (Bin (Bin (izq recI) v (der recI)) (raiz recI) recD) else 
+    if giroConDer v recD then (Bin recI (raiz recD) (Bin (izq recD) v (der recD))) else (Bin recI v recD))
+    where giroConIzq v recI = (not (esNil recI)) && (f (raiz recI) v)
+          giroConDer v recD = (not (esNil recD)) && (f (raiz recD) v)
 
--- if nil:
-    -- Bin nil e nil
--- else:
-    -- if e < v_nodo:
-        -- Bin insertarABB() v_nodo tuviejaderecha
-    -- else:
-        -- Bin tuviejaizquierda v_nodo insertarABB()
-
-
--- 
-
-
-
--- insertarHeap :: (a -> a -> Bool) -> AB a -> a -> AB a
--- insertarHeap undefined 
-
+--if (tengoQueMeterAIzquierda der izq) then  (Bin (insertarHeapAux izq e) v der) else (Bin izq v (insertarHeapAux der e))
 -- truncar :: AB a -> Integer -> AB a
 -- truncar = undefined
 
