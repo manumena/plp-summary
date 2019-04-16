@@ -123,9 +123,12 @@ heapify f = foldAB Nil (\v recI recD -> if giroConIzq v recI then (Bin (Bin (izq
     where giroConIzq v recI = (not (esNil recI)) && (f (raiz recI) v)
           giroConDer v recD = (not (esNil recD)) && (f (raiz recD) v)
 
---if (tengoQueMeterAIzquierda der izq) then  (Bin (insertarHeapAux izq e) v der) else (Bin izq v (insertarHeapAux der e))
--- truncar :: AB a -> Integer -> AB a
--- truncar = undefined
+truncar :: AB a -> Int -> AB a
+truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1)))) ab
+
+
+--if hayQueCortar v abIzq abDer then Nil else (Bin recI v recD)
+--where hayQueCortar v abIzq abDer = (max (altura abIzq) (altura abDer)) + 1 == alturaCorte  
 
 -- --Ejecución de los tests
 -- main :: IO Counts
