@@ -1,4 +1,4 @@
---import Test.HUnit
+import Test.HUnit
 
 -- Definiciones de tipos
 
@@ -19,27 +19,27 @@ abHoja :: a -> AB a
 abHoja x = Bin Nil x Nil
 
 -- -- Devuelve una lista con los elementos de los nodos de un árbol binario AB recorridos en profundidad de izquierda a derecha
--- inorder :: AB a -> [a]    
--- inorder = foldAB [] (\i r d -> i ++ (r:d))
+inorder :: AB a -> [a]    
+inorder = foldAB [] (\r i d -> i ++ (r:d))
 
 -- Estructuras para tests
 
 -- -- Heap (<) completo
--- ab1 = Bin (abHoja 4) 2 (abHoja 5)
+ab1 = Bin (abHoja 4) 2 (abHoja 5)
 -- -- Heap (<) completo
--- ab2 = Bin (abHoja 6) 3 (abHoja 7)
+ab2 = Bin (abHoja 6) 3 (abHoja 7)
 -- -- Heap (>) completo
--- ab3 = Bin (Bin (abHoja 4) 5 (abHoja 2)) 7 (Bin (abHoja 3) 6 (abHoja 1))
+ab3 = Bin (Bin (abHoja 4) 5 (abHoja 2)) 7 (Bin (abHoja 3) 6 (abHoja 1))
 -- -- Heap (<)
--- ab4 = Bin ab1 1 (abHoja 3)
--- -- ABB completo
--- ab5 = Bin (Bin (abHoja 1) 2 (abHoja 3)) 4 (Bin (abHoja 5) 6 (abHoja 7))
+ab4 = Bin ab1 1 (abHoja 3)
+-- ABB completo
+ab5 = Bin (Bin (abHoja 1) 2 (abHoja 3)) 4 (Bin (abHoja 5) 6 (abHoja 7))
 -- -- Heap (<)
--- ab6 = Bin ab1 0 (abHoja 6)
+ab6 = Bin ab1 0 (abHoja 6)
 -- -- ABB
--- ab7 = Bin (Bin (abHoja 1) 2 (abHoja 4)) 5 (abHoja 7)
+ab7 = Bin (Bin (abHoja 1) 2 (abHoja 4)) 5 (abHoja 7)
 -- -- Heap (<) infinito, probar truncando
--- ab8 = Bin (mapAB (*2) ab8) 1 (mapAB ((+1) . (*2)) ab8)
+ab8 = Bin (mapAB (*2) ab8) 1 (mapAB ((+1) . (*2)) ab8)
 
 -- -- Ejercicios
 -- EJ 1
@@ -72,7 +72,6 @@ esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v a
 -- ejemplos de uso de rec y fold
 sumaRec = recAB 0 (\v _ _ recI recD -> v + recI + recD) 
 sumaFold = foldAB 0 (\v recI recD -> v + recI + recD) 
--- 
 
 -- EJ 5
 altura :: AB a -> Int
@@ -101,13 +100,10 @@ esNil Nil = True
 esNil _ = False
 
 insertarABB :: Ord a => AB a -> a -> AB a
-insertarABB Nil e = abHoja e
-insertarABB ab e = insertarABBAux e (raiz ab) ab
-
-insertarABBAux :: Ord a => a -> a -> AB a -> AB a
-insertarABBAux e r = foldAB Nil (\v recI recD -> if (v<r && e<r) || (v>r && e>r) then insertar v recI recD else (Bin recI v recD))
-    where insertar v recI recD = (Bin (if e <= v && recI == Nil then (abHoja e) else recI) v (if e > v && recD == Nil then (abHoja e) else recD))
-
+insertarABB ab = recAB (const Nil) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if nodoAInsertar <= raiz && abIzq == Nil then Bin (abHoja nodoAInsertar) raiz abDer else
+                                                                                      if nodoAInsertar >= raiz && abDer == Nil then Bin abIzq raiz (abHoja nodoAInsertar) else
+                                                                                      if nodoAInsertar <= raiz then Bin (recI nodoAInsertar) raiz abDer else Bin abIzq raiz (recD nodoAInsertar)
+                                                                                      )) ab
 
 insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
 insertarHeap f Nil e = abHoja e
@@ -131,27 +127,32 @@ truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCor
 --where hayQueCortar v abIzq abDer = (max (altura abIzq) (altura abDer)) + 1 == alturaCorte  
 
 -- --Ejecución de los tests
--- main :: IO Counts
--- main = do runTestTT allTests
+main :: IO Counts
+main = do runTestTT allTests
 
--- allTests = test [
---   "ejercicio1" ~: testsEj1,
+--allTests = test [
+-- "ejercicio1" ~: testsEj1,
 --   "ejercicio2" ~: testsEj2,
 --   "ejercicio3" ~: testsEj3,
 --   "ejercicio4" ~: testsEj4,
 --   "ejercicio5" ~: testsEj5,
 --   "ejercicio6" ~: testsEj6,
 --   "ejercicio7" ~: testsEj7
---   ]
+--]
 
--- testsEj1 = test [
---   [1,2,4,5,7] ~=? inorder ab7,
---   [1,2,3,4,5,6,7] ~=? inorder ab5
---   ]
+allTests = test ["ejercicio1" ~: testsEj1,
+                 "ejercicio2" ~: testsEj2,
+                 "ejercicio6" ~: testsEj6,
+                 "ejercicio7" ~: testsEj7]
+
+testsEj1 = test [
+  [1,2,4,5,7] ~=? inorder ab7,
+  [1,2,3,4,5,6,7] ~=? inorder ab5
+  ]
   
--- testsEj2 = test [
---   [5,3,6,1,7] ~=? inorder (mapAB (+1) ab6)
---   ]
+testsEj2 = test [
+  [5,3,6,1,7] ~=? inorder (mapAB (+1) ab6)
+  ]
 
 -- testsEj3 = test [
 --   0 ~=? 0 --Cambiar esto por tests verdaderos.
@@ -165,12 +166,12 @@ truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCor
 --   0 ~=? 0 --Cambiar esto por tests verdaderos.
 --   ]
 
--- testsEj6 = test [
---   True ~=? esHeap (<) (insertarHeap (<) (insertarHeap (<) ab6 3) 1),
---   True ~=? esABB (insertarABB (insertarABB ab7 6) 9)
---   ]
+testsEj6 = test [
+  True ~=? esHeap (<) (insertarHeap (<) (insertarHeap (<) ab6 3) 1),
+  True ~=? esABB (insertarABB (insertarABB ab7 6) 9)
+  ]
 
--- testsEj7 = test [
---   [8,4,12,2,10,6,14,1,9,5,13,3,11,7,15] ~=? inorder (truncar ab8 4),
---   True ~=? esHeap (<) (truncar ab8 5)
---   ]
+testsEj7 = test [
+   [8,4,12,2,10,6,14,1,9,5,13,3,11,7,15] ~=? inorder (truncar ab8 4),
+   True ~=? esHeap (<) (truncar ab8 5)
+   ]
