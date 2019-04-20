@@ -107,17 +107,13 @@ insertarABB ab = recAB (const Nil) (\raiz abIzq abDer recI recD -> (\nodoAInsert
 
 insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
 insertarHeap f Nil e = abHoja e
-insertarHeap f ab e = heapify f (insertarHeapAux ab e)
-
-insertarHeapAux :: Ord a => AB a -> a -> AB a
-insertarHeapAux ab e = recAB (abHoja e) (\v abIzq abDer recI recD -> if tengoQueMeterADerecha abIzq abDer then (Bin abIzq v recD) else (Bin recI v abDer)) ab
-    where tengoQueMeterADerecha izq der = completo izq && (altura izq > altura der)
-
-heapify :: (a -> a -> Bool) -> AB a -> AB a
-heapify f = foldAB Nil (\v recI recD -> if giroConIzq v recI then (Bin (Bin (izq recI) v (der recI)) (raiz recI) recD) else 
-    if giroConDer v recD then (Bin recI (raiz recD) (Bin (izq recD) v (der recD))) else (Bin recI v recD))
-    where giroConIzq v recI = (not (esNil recI)) && (f (raiz recI) v)
-          giroConDer v recD = (not (esNil recD)) && (f (raiz recD) v)
+insertarHeap f ab e = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if completarRamaDerecha abIzq abDer then 
+                                                                                                                          if f nodoAInsertar raiz then (Bin abIzq nodoAInsertar (recD raiz))  
+                                                                                                                          else Bin abIzq raiz (recD nodoAInsertar) 
+                                                                                                                        else 
+                                                                                                                          if f nodoAInsertar raiz then (Bin (recI raiz) nodoAInsertar abDer)
+                                                                                                                          else Bin (recI nodoAInsertar) raiz abDer)) ab e
+                  where completarRamaDerecha izq der = completo izq && (altura izq > altura der)
 
 truncar :: AB a -> Int -> AB a
 truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1)))) ab
