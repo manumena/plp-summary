@@ -49,10 +49,6 @@ esHeap :: (a -> a -> Bool) -> AB a ->  Bool
 esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v abI) && (comparar v abD))
         where comparar v ab = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
 
--- ejemplos de uso de rec y fold
-sumaRec = recAB 0 (\v _ _ recI recD -> v + recI + recD) 
-sumaFold = foldAB 0 (\v recI recD -> v + recI + recD) 
-
 -- EJ 5
 altura :: AB a -> Int
 altura = foldAB 0 (\v recI recD -> 1 + max recI recD)
@@ -98,7 +94,7 @@ insertarHeap f ab e = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIz
 truncar :: AB a -> Int -> AB a
 truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1)))) ab
 
--- Estructuras para tests
+-- ESTRUCTURAS PARA TESTS --
 
 -- -- Heap (<) completo
 heapMenor1completo = Bin (abHoja 4) 2 (abHoja 5)
@@ -113,15 +109,32 @@ abbCompleto = Bin (Bin (abHoja 1) 2 (abHoja 3)) 4 (Bin (abHoja 5) 6 (abHoja 7))
 -- -- Heap (<)
 heapMenor4 = Bin heapMenor1completo 0 (abHoja 6)
 -- -- ABB
-abb1 = Bin (Bin (abHoja 1) 2 (abHoja 4)) 5 (abHoja 7)
+abbIncompleto1 = Bin (Bin (abHoja 1) 2 (abHoja 4)) 5 (abHoja 7)
 -- -- Heap (<) infinito, probar truncando
 heapMenorInfinito = Bin (mapAB (*2) heapMenorInfinito) 1 (mapAB ((+1) . (*2)) heapMenorInfinito)
 -- 
-abDegeneradoAIzq = Bin (abHoja 1) 4 Nil
+abbDegeneradoAIzq = Bin (abHoja 1) 2 Nil
 -- 
-abDegeneradoADer = Bin Nil 4 (abHoja 1)
+abbDegeneradoADer = Bin Nil 4 (abHoja 5)
+--
+abbConIzqYDerNilEnAlgunMomento = Bin abbDegeneradoAIzq 3 abbDegeneradoADer
+-- 
+heapMayorDegeneradoAIzq = Bin (abHoja 1) 2 Nil
+-- 
+heapMayorDegeneradoADer = Bin Nil 2 (abHoja 1) -- ojo porque no seria un heap "valido" segun el orden de agregado
 
--- --Ejecución de los tests
+-- ejemplos para testear rec y fold
+sumaRecursiva :: Num a => AB a -> a
+sumaRecursiva Nil = 0
+sumaRecursiva (Bin izq v der) = sumaRecursiva izq + v + sumaRecursiva der
+
+sumaRec :: Num a => AB a -> a
+sumaRec = recAB 0 (\v _ _ recI recD -> v + recI + recD) 
+
+sumaFold :: Num a => AB a -> a
+sumaFold = foldAB 0 (\v recI recD -> v + recI + recD) 
+
+--EJECUCIÓN DE LOS TESTS --
 main :: IO Counts
 main = do runTestTT allTests
 
@@ -134,57 +147,104 @@ allTests = test ["ejercicio1" ~: testsEj1,
                  "ejercicio7" ~: testsEj7]
 
 testsEj1 = test [
-  [1,2,4,5,7] ~=? inorder abb1,
-  [1,2,3,4,5,6,7] ~=? inorder abbCompleto
+    [1,2,4,5,7] ~=? inorder abbIncompleto1,
+    [1,2,3,4,5,6,7] ~=? inorder abbCompleto,
+    sumaRecursiva abbIncompleto1 ~=? sumaRec abbIncompleto1,
+    sumaRecursiva abbIncompleto1 ~=? sumaFold abbIncompleto1,
+    sumaRecursiva Nil ~=? sumaRec Nil,
+    sumaRecursiva Nil ~=? sumaFold Nil,
+    sumaRecursiva abbConIzqYDerNilEnAlgunMomento ~=? sumaRec abbConIzqYDerNilEnAlgunMomento,
+    sumaRecursiva abbConIzqYDerNilEnAlgunMomento ~=? sumaFold abbConIzqYDerNilEnAlgunMomento
   ]
   
 testsEj2 = test [
-  [5,3,6,1,7] ~=? inorder (mapAB (+1) heapMenor4)
+    [5,3,6,1,7] ~=? inorder (mapAB (+1) heapMenor4),
+    [] ~=? inorder (mapAB (+1) Nil),
+    [7] ~=? inorder (mapAB (+1) (abHoja 6)),
+    [2,3] ~=? inorder (mapAB (+1) abbDegeneradoAIzq),
+    [5,6] ~=? inorder (mapAB (+1) abbDegeneradoADer)
   ]
 
 testsEj3 = test [
-  True ~=? nilOCumple (<) 1 Nil,
-  True ~=? nilOCumple (<) 1 (abHoja 2),
-  False ~=? nilOCumple (>=) 1 (abHoja 2)
+    True ~=? nilOCumple (<) 1 Nil,
+    True ~=? nilOCumple (<) 1 (abHoja 2),
+    False ~=? nilOCumple (>=) 1 (abHoja 2)
   ]
 
 testsEj4 = test [
-  -- esABB
-  -- fue necesario definirlo como izq de abHoja porque al usar Nil podia ser de muchos tipos de Ord y no podia definir cual
-  True ~=? esABB (izq (abHoja 2)), --esABB Nil
-  True ~=? esABB abbCompleto,
-  True ~=? esABB abb1,
-  False ~=? esABB heapMenor1completo,
-  -- esHeap
-  True ~=? esHeap (<) (izq (abHoja 2)), --esHeap Nil
-  True ~=? esHeap (<) heapMenor1completo,
-  True ~=? esHeap (>) heapMayor1completo,
-  False ~=? esHeap (<) heapMayor1completo,
-  False ~=? esHeap (<) abb1,
-  False ~=? esHeap (>) abb1,
-  True ~=? esHeap (==) (Bin (abHoja 2) 2 (abHoja 2))
+    -- esABB
+    -- fue necesario definirlo como izq de abHoja porque al usar Nil podia ser de muchos tipos de Ord y no podia definir cual
+    True ~=? esABB (izq (abHoja 2)), --esABB Nil
+    True ~=? esABB (abHoja 2),
+    True ~=? esABB abbCompleto,
+    True ~=? esABB abbConIzqYDerNilEnAlgunMomento,
+    False ~=? esABB heapMenor1completo,
+    False ~=? esABB heapMayor1completo,
+
+    -- esHeap
+    True ~=? esHeap (<) (izq (abHoja 2)), --esHeap Nil
+    True ~=? esHeap (<) (abHoja 2),
+    True ~=? esHeap (<) heapMenor1completo,
+    True ~=? esHeap (>) heapMayor1completo,
+    True ~=? esHeap (>) heapMayorDegeneradoAIzq,  
+    True ~=? esHeap (>) heapMayorDegeneradoADer,
+
+    False ~=? esHeap (<) heapMayor1completo,
+    False ~=? esHeap (<) abbIncompleto1,
+    False ~=? esHeap (>) abbIncompleto1,
+    False ~=? esHeap (<) heapMayorDegeneradoAIzq,  
+    False ~=? esHeap (<) heapMayorDegeneradoADer
   ]
 
 testsEj5 = test [
-  True ~=? completo Nil,
-  True ~=? completo (abHoja 1),
-  True ~=? completo abbCompleto,
-  True ~=? completo heapMenor1completo,
-  True ~=? completo heapMayor1completo,
-  False ~=? completo heapMenor4,
-  False ~=? completo abDegeneradoAIzq,
-  False ~=? completo abDegeneradoADer
+    True ~=? completo Nil,
+    True ~=? completo (abHoja 1),
+    True ~=? completo abbCompleto,
+    True ~=? completo heapMenor1completo,
+    True ~=? completo heapMayor1completo,
+    False ~=? completo heapMenor4,
+    False ~=? completo abbDegeneradoAIzq,
+    False ~=? completo abbDegeneradoADer
   ]
 
 testsEj6 = test [
-  True ~=? esHeap (<) (insertarHeap (<) (insertarHeap (<) heapMenor4 3) 1),
-  True ~=? esABB (insertarABB (insertarABB abb1 6) 9)
+    -- insertarABB
+    True ~=? esABB (insertarABB (insertarABB abbIncompleto1 6) 9),
+    True ~=? esABB (insertarABB Nil 6),
+    True ~=? esABB (insertarABB (abHoja 3) 6),
+    True ~=? esABB (insertarABB (abHoja 3) 1),
+    True ~=? esABB (insertarABB abbCompleto 10),
+    True ~=? esABB (insertarABB abbIncompleto1 10),
+
+    -- insertarHeap
+    True ~=? esHeap (<) (insertarHeap (<) (insertarHeap (<) heapMenor4 3) 1),
+    True ~=? esHeap (<) (insertarHeap (<) Nil 1),
+
+    True ~=? esHeap (<) (insertarHeap (<) (abHoja 2) 1),
+    altura (abHoja 2) + 1 ~=? altura (insertarHeap (<) (abHoja 2) 1),
+
+    True ~=? esHeap (>) (insertarHeap (>) (heapMayorDegeneradoAIzq) 8),
+    altura heapMayorDegeneradoAIzq ~=? altura (insertarHeap (>) (heapMayorDegeneradoAIzq) 8),
+
+    True ~=? esHeap (>) (insertarHeap (>) (heapMayor1completo) 10),
+    altura heapMayor1completo + 1 ~=? altura (insertarHeap (>) (heapMayor1completo) 10)
   ]
 
 testsEj7 = test [
-   [8,4,12,2,10,6,14,1,9,5,13,3,11,7,15] ~=? inorder (truncar heapMenorInfinito 4),
-   True ~=? esHeap (<) (truncar heapMenorInfinito 5)
-   ]
+    [8,4,12,2,10,6,14,1,9,5,13,3,11,7,15] ~=? inorder (truncar heapMenorInfinito 4),
+    True ~=? esHeap (<) (truncar heapMenorInfinito 5),
+
+    altura Nil ~=? altura (truncar Nil 2),
+
+    [] ~=? inorder (truncar (abHoja 5) 0),
+    [] ~=? inorder (truncar heapMayor1completo 0),
+
+    [5] ~=? inorder (truncar (abHoja 5) 1),
+    [7] ~=? inorder (truncar heapMayor1completo 1),
+
+    [2,3,4] ~=? inorder (truncar (Bin abbDegeneradoAIzq 3 (abHoja 4)) 2),
+    [2,3,4] ~=? inorder (truncar (Bin (abHoja 2) 3 abbDegeneradoADer) 2)
+  ]
 
 -- para correr reload y main en un solo comando
 -- :def run const $ return $ unlines [":reload",":main"]
