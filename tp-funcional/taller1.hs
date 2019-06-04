@@ -29,7 +29,7 @@ recAB z f Nil = z
 recAB z f (Bin i v d) = f v i d (recAB z f i) (recAB z f d)  
 
 foldAB :: b -> (a -> b -> b -> b) -> AB a -> b
-foldAB z f ab = recAB z (\v i d recI recD -> f v recI recD) ab
+foldAB z f = recAB z (\v _ _ recI recD -> f v recI recD)
 
 -- EJ 2
 mapAB :: (a -> b) -> AB a -> AB b
@@ -51,10 +51,10 @@ esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v a
 
 -- EJ 5
 altura :: AB a -> Int
-altura = foldAB 0 (\v recI recD -> 1 + max recI recD)
+altura = foldAB 0 (\_ recI recD -> 1 + max recI recD)
 
 cantidadDeNodos :: AB a -> Int
-cantidadDeNodos = foldAB 0 (\v recI recD -> 1 + recI + recD)
+cantidadDeNodos = foldAB 0 (\_ recI recD -> 1 + recI + recD)
 
 completo :: AB a -> Bool
 completo ab = (2^altura ab) - 1 == cantidadDeNodos ab
@@ -92,7 +92,7 @@ insertarHeap f ab e = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIz
                   where completarRamaDerecha izq der = completo izq && (altura izq > altura der)
 
 truncar :: AB a -> Int -> AB a
-truncar ab = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1)))) ab
+truncar = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1))))
 
 -- ESTRUCTURAS PARA TESTS --
 
