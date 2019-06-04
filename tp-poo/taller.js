@@ -63,29 +63,31 @@ algunoAcepta = function(s, qs){
 
 
 // ej 6
+aceptaND = function(cadena) {
+    if(cadena.length == 0){
+        return this.esFinal;
+    } else {
+        sig = this.transiciones[cadena.head()]
+        if (Array.isArray(sig)) {
+            return sig.some(function(e) {return e.acepta(cadena.tail())})
+        } else {
+            return sig != undefined && sig.acepta(cadena.tail())
+        }
+    }
+};
+
 Estado.prototype.nuevaTransicionND = function(etiqueta, destino) {
-    if (this.transiciones[etiqueta] == undefined) {
+    if (this.transiciones[etiqueta] == undefined) { //si no tenia transacciones
         this.nuevaTransicion(etiqueta, destino);
     } else {
-        if (Array.isArray(this.transiciones[etiqueta])){
+        if (Array.isArray(this.transiciones[etiqueta])){ //si ya era ND
             if (!this.transiciones[etiqueta].includes(destino)) {
                 this.transiciones[etiqueta].push(destino);
             }
         } else {
-            if (this.transiciones[etiqueta] != destino) {
+            if (this.transiciones[etiqueta] != destino) { //si hay que volverlo ND
                 this.transiciones[etiqueta] = [this.transiciones[etiqueta], destino];
-                this.acepta = function(s) {
-                    if(s.length == 0){
-                        return this.esFinal;
-                    } else {
-                        sig = this.transiciones[s.head()]
-                        if (Array.isArray(sig)) {
-                            return sig.some(function(e) {return e.acepta(s.tail())})
-                        } else {
-                            return sig != undefined && sig.acepta(s.tail())
-                        }
-                    }
-                }
+                this.acepta = aceptaND;
             }
         }
     }
@@ -135,5 +137,5 @@ function calcularResultado(){
     console.log("e1.acepta('') " + e1.acepta(''));
     console.log("e1.acepta('ab') " + e1.acepta('ab'));
     console.log("e3.acepta('') " + e3.acepta(''));
-    return 'mira la consola wacho';
+    return '';
 }
