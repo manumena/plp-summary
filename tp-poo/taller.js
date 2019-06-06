@@ -18,8 +18,9 @@ let q2 = {
 
 let q1 = {
     esFinal: false,
-    transiciones: {'a': this, 'b': q2, 'c': q3}
+    transiciones: {'b': q2, 'c': q3}
 };
+q1.transiciones['a'] = q1
 
 // ej 2
 String.prototype.head = function(){return this[0]};
@@ -128,6 +129,92 @@ esDeterministico = function(q) {
     return esDetSinRepetir(q, [q]);
 }
 
+assert = function(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed";
+    }
+}
+
+test_ej_3_1_acepta = function() {
+    console.log("Corriendo test_ej_3_1_acepta")
+
+    e3 = new Estado(true, {});
+    e2 = new Estado(false, {'b': e3});
+    e1 = new Estado(false, {'a': e2});
+
+    assert(!e1.acepta(''));
+    assert(!e1.acepta('a'));
+    assert(e1.acepta('ab'));
+    assert(!e2.acepta(''));
+    assert(e2.acepta('b'));
+    assert(e3.acepta(''));
+
+    console.log("[PASA]")
+}
+
+test_ej_3_2_acepta = function() {
+    console.log("Corriendo test_ej_3_2_acepta")
+
+    assert(!q1.acepta(''));
+    assert(q1.acepta('b'));
+    assert(q1.acepta('c'));
+    assert(q1.acepta('bc'));
+    assert(q1.acepta('bc'));
+    assert(!q1.acepta('a'));
+    assert(q1.acepta('ab'));
+    assert(q1.acepta('aaab'));
+    assert(q1.acepta('aaaaaab'));
+
+    assert(q2.acepta(''));
+    assert(q2.acepta('c'));
+    
+    assert(q3.acepta(''));
+
+    console.log("[PASA]")
+}
+
+test_ej_4 = function() {
+    console.log("Corriendo test_ej_4");
+
+    e = new Estado(true, {});
+
+    assert(e.acepta(''));
+
+    e.nuevaTransicion('a', e);
+
+    assert(e.acepta('a'));
+    assert(e.acepta('aaaa'));
+
+    e.nuevaTransicion('b', e);
+
+    assert(e.acepta('ab'));
+    assert(e.acepta('abba'));
+
+    console.log("[PASA]")
+}
+
+test_ej_5 = function() {
+    console.log("Corriendo test_ej_5");
+
+    e1 = new Estado(true, {});
+    e2 = new Estado(false, {'a': e1});
+
+    assert(algunoAcepta('', e1));
+    assert(algunoAcepta('', [e1, e2]));
+    assert(!algunoAcepta('', e2));
+    assert(algunoAcepta('a', e2));
+    assert(algunoAcepta('a', [e1, e2]));
+    assert(!algunoAcepta('aa', [e1, e2]));
+
+    console.log("[PASA]")
+}
+
+test_ej_6 = function() {
+    console.log("Corriendo test_ej_5");
+
+    e1 = new Estado(true, {});
+}
+
 function calcularResultado(){
 	//Editen esta función para que devuelva lo que quieran ver. Pueden escribir acá sus tests.
     e3 = new Estado(true, {});
@@ -137,5 +224,10 @@ function calcularResultado(){
     console.log("e1.acepta('') " + e1.acepta(''));
     console.log("e1.acepta('ab') " + e1.acepta('ab'));
     console.log("e3.acepta('') " + e3.acepta(''));
+
+    test_ej_3_1_acepta();
+    test_ej_3_2_acepta();
+    test_ej_4();
+    test_ej_5();
     return '';
 }
