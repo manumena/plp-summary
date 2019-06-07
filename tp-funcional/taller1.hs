@@ -76,7 +76,7 @@ esNil Nil = True
 esNil _ = False
 
 insertarABB :: Ord a => AB a -> a -> AB a
-insertarABB = recAB (const Nil) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if nodoAInsertar <= raiz then Bin (recI nodoAInsertar) raiz abDer else Bin abIzq raiz (recD nodoAInsertar)))
+insertarABB = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if nodoAInsertar <= raiz then Bin (recI nodoAInsertar) raiz abDer else Bin abIzq raiz (recD nodoAInsertar)))
 
 insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
 insertarHeap f Nil e = abHoja e
