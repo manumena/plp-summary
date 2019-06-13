@@ -129,6 +129,8 @@ esDeterministico = function(q) {
     return esDetSinRepetir(q, [q]);
 }
 
+
+// TESTS
 assert = function(condition, message) {
     if (!condition) {
         throw message || "Assertion failed";
@@ -210,24 +212,51 @@ test_ej_5 = function() {
 }
 
 test_ej_6 = function() {
-    console.log("Corriendo test_ej_5");
+    console.log("Corriendo test_ej_6");
 
     e1 = new Estado(true, {});
+    e2 = new Estado(false, {'a': e1});
+	e3 = new Estado(false, {});
+
+	e1.nuevaTransicionND('b', e2);
+	assert(e1.transiciones['b'] == e2);
+	e1.nuevaTransicionND('b', e3);
+	assert(Array.isArray(e1.transiciones['b']));
+	assert(e1.transiciones['b'].includes(e2) && e1.transiciones['b'].includes(e3));
+	
+	e2.nuevaTransicionND('a', e3);
+	assert(e2.transiciones['a'].includes(e1) && e2.transiciones['a'].includes(e3));
+    console.log("[PASA]")
+}
+
+test_ej_7 = function() {
+    console.log("Corriendo test_ej_7");
+
+    e1 = new Estado(true, {});
+    e2 = new Estado(false, {'a': e1});
+	e3 = new Estado(false, {});
+
+	assert(esDeterministico(e1));
+	assert(esDeterministico(e2));
+	e1.nuevaTransicionND('b', e2);
+	assert(esDeterministico(e1));
+	
+	e1.nuevaTransicionND('b', e3);
+	assert(!esDeterministico(e1));
+	
+	assert(!esDeterministico(e2));
+	assert(esDeterministico(e3)); //porque no llega a nadie
+    console.log("[PASA]")
 }
 
 function calcularResultado(){
 	//Editen esta función para que devuelva lo que quieran ver. Pueden escribir acá sus tests.
-    e3 = new Estado(true, {});
-    e2 = new Estado(false, {'b': e3});
-    e1 = new Estado(false, {'a': e2});
-
-    console.log("e1.acepta('') " + e1.acepta(''));
-    console.log("e1.acepta('ab') " + e1.acepta('ab'));
-    console.log("e3.acepta('') " + e3.acepta(''));
 
     test_ej_3_1_acepta();
     test_ej_3_2_acepta();
     test_ej_4();
     test_ej_5();
-    return '';
+    test_ej_6();
+    test_ej_7();
+    return 'PASARON TODOS LOS TESTS :D';
 }
