@@ -48,7 +48,9 @@ Estado.prototype.acepta = function(s){
 
 // ej4
 Estado.prototype.nuevaTransicion = function(etiqueta, destino){
-    this.transiciones[etiqueta] = destino;
+	nuevasTransiciones = Object.assign({}, this.transiciones);
+    nuevasTransiciones[etiqueta] = destino;
+    this.transiciones = nuevasTransiciones;
 };
 
 // ej5 
@@ -68,12 +70,7 @@ aceptaND = function(cadena) {
     if(cadena.length == 0){
         return this.esFinal;
     } else {
-        sig = this.transiciones[cadena.head()]
-        if (Array.isArray(sig)) {
-            return sig.some(function(e) {return e.acepta(cadena.tail())})
-        } else {
-            return sig != undefined && sig.acepta(cadena.tail())
-        }
+    	return algunoAcepta(cadena, this.transiciones)
     }
 };
 
@@ -81,32 +78,24 @@ Estado.prototype.nuevaTransicionND = function(etiqueta, destino) {
     if (this.transiciones[etiqueta] == undefined) { //si no tenia transacciones
         this.nuevaTransicion(etiqueta, destino);
     } else {
+		nuevasTransiciones = Object.assign({}, this.transiciones);
+        
         if (Array.isArray(this.transiciones[etiqueta])){ //si ya era ND
             if (!this.transiciones[etiqueta].includes(destino)) {
-                this.transiciones[etiqueta].push(destino);
+                nuevasTransiciones[etiqueta].push(destino);
             }
         } else {
             if (this.transiciones[etiqueta] != destino) { //si hay que volverlo ND
-                this.transiciones[etiqueta] = [this.transiciones[etiqueta], destino];
+                nuevasTransiciones[etiqueta] = [this.transiciones[etiqueta], destino];
                 this.acepta = aceptaND;
             }
         }
+
+    	this.transiciones = nuevasTransiciones;
     }
 };
 
 // ej 7
-Estado.prototype.destinos = function(){
-    dest = [];
-    Object.values(this.transiciones).forEach(function(estados) {
-        if(Array.isArray(estados)){
-            dest = dest.concat(estados);
-        }else{
-            dest.push(estados);
-        }
-    });
-    return dest;
-}
-
 esDetSinRepetir = function(q, visitados) {
     esDet = true;
     Object.keys(q.transiciones).forEach(function(etiqueta){
@@ -195,6 +184,19 @@ test_ej_4 = function() {
     console.log("[PASA]")
 }
 
+test_ej_4_test_aliasing = function(){
+	console.log("Corriendo test_ej_4_test_aliasing");
+    e = new Estado(true, {});
+    aliasDeE = Object.create(e);
+
+	aliasDeE.nuevaTransicion('c', aliasDeE);
+
+    assert(aliasDeE.acepta('c'));
+    assert(!e.acepta('c'));
+
+    console.log("[PASA]")
+}
+
 test_ej_5 = function() {
     console.log("Corriendo test_ej_5");
 
@@ -220,12 +222,45 @@ test_ej_6 = function() {
 
 	e1.nuevaTransicionND('b', e2);
 	assert(e1.transiciones['b'] == e2);
+
 	e1.nuevaTransicionND('b', e3);
+
 	assert(Array.isArray(e1.transiciones['b']));
 	assert(e1.transiciones['b'].includes(e2) && e1.transiciones['b'].includes(e3));
 	
 	e2.nuevaTransicionND('a', e3);
 	assert(e2.transiciones['a'].includes(e1) && e2.transiciones['a'].includes(e3));
+
+    console.log("[PASA]")
+}
+
+test_ej_6_test_aliasing = function(){
+    console.log("Corriendo test_ej_6_test_aliasing");
+
+	e1 = new Estado(true, {});
+	e2 = new Estado(false, {'a': e2});
+    aliasDeE1 = Object.create(e1);
+    aliasDeE2 = Object.create(e2);
+
+    //agregar deterministicamente no pisa lo anterior
+    console.log("antes, e1, aliasDeE1");
+    console.log(e1);
+    console.log(aliasDeE1);
+
+    aliasDeE1.nuevaTransicionND('c', aliasDeE1);
+    
+    console.log("dsp, e1, aliasDeE1");
+    console.log(e1);
+    console.log(aliasDeE1);
+
+    assert(aliasDeE1.acepta('c'));
+    assert(!e1.acepta('c'));
+
+    //agregar NO deterministicamente no pisa lo anterior
+    aliasDeE2.nuevaTransicionND('a', e1);
+    assert(aliasDeE2.acepta('a'));
+    assert(!e2.acepta('a'));
+
     console.log("[PASA]")
 }
 
@@ -255,8 +290,10 @@ function calcularResultado(){
     test_ej_3_1_acepta();
     test_ej_3_2_acepta();
     test_ej_4();
+    test_ej_4_test_aliasing();
     test_ej_5();
     test_ej_6();
+    test_ej_6_test_aliasing();
     test_ej_7();
     return 'PASARON TODOS LOS TESTS :D';
 }
