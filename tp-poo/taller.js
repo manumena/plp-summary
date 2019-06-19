@@ -48,7 +48,7 @@ Estado.prototype.acepta = function(s){
 
 // ej4
 Estado.prototype.nuevaTransicion = function(etiqueta, destino){
-	nuevasTransiciones = Object.assign({}, this.transiciones);
+    nuevasTransiciones = Object.assign({}, this.transiciones);
     nuevasTransiciones[etiqueta] = destino;
     this.transiciones = nuevasTransiciones;
 };
@@ -70,8 +70,8 @@ aceptaND = function(cadena) {
     if(cadena.length == 0){
         return this.esFinal;
     } else {
-		sig = this.transiciones[cadena.head()]
-    	return sig != undefined && algunoAcepta(cadena.tail(), sig)
+        sig = this.transiciones[cadena.head()];
+        return sig != undefined && algunoAcepta(cadena.tail(), sig);
     }
 };
 
@@ -79,11 +79,11 @@ Estado.prototype.nuevaTransicionND = function(etiqueta, destino) {
     if (this.transiciones[etiqueta] == undefined) { //si no tenia transiciones
         this.nuevaTransicion(etiqueta, destino);
     } else {
-		nuevasTransiciones = Object.assign({}, this.transiciones);
+        nuevasTransiciones = Object.assign({}, this.transiciones);
         
         if (Array.isArray(nuevasTransiciones[etiqueta])){ //si ya era ND
             if (!nuevasTransiciones[etiqueta].includes(destino)) {
-        		nuevoArray = nuevasTransiciones[etiqueta].slice(); //copia del array
+                nuevoArray = nuevasTransiciones[etiqueta].slice(); //copia del array
                 nuevoArray.push(destino);
                 nuevasTransiciones[etiqueta] = nuevoArray;
             }
@@ -94,7 +94,7 @@ Estado.prototype.nuevaTransicionND = function(etiqueta, destino) {
             }
         }
 
-    	this.transiciones = nuevasTransiciones;
+        this.transiciones = nuevasTransiciones;
     }
 };
 
@@ -120,7 +120,6 @@ esDetSinRepetir = function(q, visitados) {
 esDeterministico = function(q) {
     return esDetSinRepetir(q, [q]);
 }
-
 
 // TESTS
 assert = function(condition, message) {
@@ -188,11 +187,11 @@ test_ej_4 = function() {
 }
 
 test_ej_4_test_aliasing = function(){
-	console.log("Corriendo test_ej_4_test_aliasing");
+    console.log("Corriendo test_ej_4_test_aliasing");
     e = new Estado(true, {});
     aliasDeE = Object.create(e);
 
-	aliasDeE.nuevaTransicion('c', aliasDeE);
+    aliasDeE.nuevaTransicion('c', aliasDeE);
 
     assert(aliasDeE.acepta('c'));
     assert(!e.acepta('c'));
@@ -221,18 +220,18 @@ test_ej_6 = function() {
 
     e1 = new Estado(true, {});
     e2 = new Estado(false, {'a': e1});
-	e3 = new Estado(false, {});
+    e3 = new Estado(false, {});
 
-	e1.nuevaTransicionND('b', e2);
-	assert(e1.transiciones['b'] == e2);
+    e1.nuevaTransicionND('b', e2);
+    assert(e1.transiciones['b'] == e2);
 
-	e1.nuevaTransicionND('b', e3);
+    e1.nuevaTransicionND('b', e3);
 
-	assert(Array.isArray(e1.transiciones['b']));
-	assert(e1.transiciones['b'].includes(e2) && e1.transiciones['b'].includes(e3));
-	
-	e2.nuevaTransicionND('a', e3);
-	assert(e2.transiciones['a'].includes(e1) && e2.transiciones['a'].includes(e3));
+    assert(Array.isArray(e1.transiciones['b']));
+    assert(e1.transiciones['b'].includes(e2) && e1.transiciones['b'].includes(e3));
+    
+    e2.nuevaTransicionND('a', e3);
+    assert(e2.transiciones['a'].includes(e1) && e2.transiciones['a'].includes(e3));
 
     console.log("[PASA]")
 }
@@ -240,38 +239,38 @@ test_ej_6 = function() {
 test_ej_6_test_aliasing = function(){
     console.log("Corriendo test_ej_6_test_aliasing");
 
-	e1 = new Estado(true, {});
+    e1 = new Estado(true, {});
     aliasDeE1 = Object.create(e1);
 
     // //agregar deterministicamente no pisa lo anterior
     aliasDeE1.nuevaTransicionND('c', aliasDeE1);
 
-	assert(aliasDeE1.transiciones['c'] == aliasDeE1);
-	assert(e1.transiciones['c'] == undefined);
+    assert(aliasDeE1.transiciones['c'] == aliasDeE1);
+    assert(e1.transiciones['c'] == undefined);
 
     assert(aliasDeE1.acepta('c'));
     assert(!e1.acepta('c'));
 
     //agregar al hacer NO deterministico no pisa lo anterior (no era ND)
-	e2 = new Estado(false, {});
-	e2.nuevaTransicion('a', e2);
+    e2 = new Estado(false, {});
+    e2.nuevaTransicion('a', e2);
     aliasDeE2 = Object.create(e2);
 
     aliasDeE2.nuevaTransicionND('a', e1);
-	assert(e2.transiciones['a'] == e2);
-	assert(aliasDeE2.transiciones['a'].includes(e1) && aliasDeE2.transiciones['a'].includes(e2));
+    assert(e2.transiciones['a'] == e2);
+    assert(aliasDeE2.transiciones['a'].includes(e1) && aliasDeE2.transiciones['a'].includes(e2));
 
     assert(aliasDeE2.acepta('a'));
     assert(!e2.acepta('a'));
 
     //agregar NO deterministicamente no pisa lo anterior (ya era ND)
-	e3 = new Estado(false, {'a': [e2, e1]});
+    e3 = new Estado(false, {'a': [e2, e1]});
     aliasDeE3 = Object.create(e3);
 
     aliasDeE3.nuevaTransicionND('a', e3);
 
-	assert(e3.transiciones['a'].includes(e1) && e3.transiciones['a'].includes(e2) && !e3.transiciones['a'].includes(e3));
-	assert(aliasDeE3.transiciones['a'].includes(e1) && aliasDeE3.transiciones['a'].includes(e2) && aliasDeE3.transiciones['a'].includes(e3));
+    assert(e3.transiciones['a'].includes(e1) && e3.transiciones['a'].includes(e2) && !e3.transiciones['a'].includes(e3));
+    assert(aliasDeE3.transiciones['a'].includes(e1) && aliasDeE3.transiciones['a'].includes(e2) && aliasDeE3.transiciones['a'].includes(e3));
 
     console.log("[PASA]");
 }
@@ -281,23 +280,23 @@ test_ej_7 = function() {
 
     e1 = new Estado(true, {});
     e2 = new Estado(false, {'a': e1});
-	e3 = new Estado(false, {});
+    e3 = new Estado(false, {});
 
-	assert(esDeterministico(e1));
-	assert(esDeterministico(e2));
-	e1.nuevaTransicionND('b', e2);
-	assert(esDeterministico(e1));
-	
-	e1.nuevaTransicionND('b', e3);
-	assert(!esDeterministico(e1));
-	
-	assert(!esDeterministico(e2));
-	assert(esDeterministico(e3)); //porque no llega a nadie
+    assert(esDeterministico(e1));
+    assert(esDeterministico(e2));
+    e1.nuevaTransicionND('b', e2);
+    assert(esDeterministico(e1));
+    
+    e1.nuevaTransicionND('b', e3);
+    assert(!esDeterministico(e1));
+    
+    assert(!esDeterministico(e2));
+    assert(esDeterministico(e3)); //porque no llega a nadie
     console.log("[PASA]")
 }
 
 function calcularResultado(){
-	//Editen esta función para que devuelva lo que quieran ver. Pueden escribir acá sus tests.
+    //Editen esta función para que devuelva lo que quieran ver. Pueden escribir acá sus tests.
 
     test_ej_3_1_acepta();
     test_ej_3_2_acepta();
@@ -309,3 +308,4 @@ function calcularResultado(){
     test_ej_7();
     return 'PASARON TODOS LOS TESTS :D';
 }
+
