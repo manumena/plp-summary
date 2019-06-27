@@ -21,11 +21,19 @@ mostrarPersonaje(Nombre) :- write(Nombre), write('\n').
 borraRespuestas :- retractall(si(_)), retractall(no(_)).
 
 % atributos(?Nombre, ?Atributos).
+% atributos('Name', ['Type/s', 'Main color', 'Inspired by', 'Generation']).
 
-atributos('Axel', ['Fachero', 'Anteojudo']).
-atributos('Gus', ['Loco', 'Vista de lince O_o', 'Skater']).
-atributos('Flor', ['Skater', 'Verdecita']).
-atributos('Manu', ['Skater', 'Fachero']).
+atributos('Bulbasaur', ['Grass', 'Poison', 'Green', 'Plant', 'First Gen']).
+atributos('Charizard', ['Fire', 'Flying', 'Red', 'Dragon', 'First Gen']).
+atributos('Squirtle', ['Water', 'Blue', 'Tortoise', 'First Gen']).
+atributos('Pidgey', ['Normal', 'Flying', 'Brown', 'Bird', 'First Gen']).
+atributos('Parasect', ['Bug', 'Grass', 'Red', 'Crab', 'First Gen']).
+
+atributos('Chikorita', ['Grass', 'Green', 'Plant', 'Second Gen']).
+atributos('Ledyba', ['Bug', 'Flying', 'Orange', 'Ladybug', 'Second Gen']).
+atributos('Qwilfish', ['Water', 'Poison', 'Blue', 'Fish', 'Second Gen']).
+atributos('Mantine', ['Water', 'Flying', 'Blue', 'Fish', 'Second Gen']).
+atributos('Ho-Oh', ['Fire', 'Flying', 'Red', 'Bird', 'Second Gen']).
 
 % satisfaceAtributos(+Atributos).
 satisfaceAtributos([]).
