@@ -46,8 +46,7 @@ esABB = recAB True (\v abI abD recI recD -> recI && recD && ((comparar v abI (>)
         where comparar v ab fcomp = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
 
 esHeap :: (a -> a -> Bool) -> AB a ->  Bool
-esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (comparar v abI) && (comparar v abD))
-        where comparar v ab = foldAB True (\raiz recI recD -> (fcomp v raiz) && recI && recD) ab
+esHeap fcomp = recAB True (\v abI abD recI recD -> recI && recD && (nilOCumple fcomp v abI) && (nilOCumple fcomp v abD))
 
 -- EJ 5
 altura :: AB a -> Int
@@ -76,17 +75,20 @@ esNil Nil = True
 esNil _ = False
 
 insertarABB :: Ord a => AB a -> a -> AB a
-insertarABB = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if nodoAInsertar <= raiz then Bin (recI nodoAInsertar) raiz abDer else Bin abIzq raiz (recD nodoAInsertar)))
+insertarABB = recAB abHoja (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if nodoAInsertar <= raiz then Bin (recI nodoAInsertar) raiz abDer else Bin abIzq raiz (recD nodoAInsertar)))
 
 insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
-insertarHeap f Nil e = abHoja e
-insertarHeap f ab e = recAB (\nodoAInsertar -> abHoja nodoAInsertar) (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> if completarRamaDerecha abIzq abDer then 
-                                                                                                                          if f nodoAInsertar raiz then (Bin abIzq nodoAInsertar (recD raiz))  
-                                                                                                                          else Bin abIzq raiz (recD nodoAInsertar) 
-                                                                                                                        else 
-                                                                                                                          if f nodoAInsertar raiz then (Bin (recI raiz) nodoAInsertar abDer)
-                                                                                                                          else Bin (recI nodoAInsertar) raiz abDer)) ab e
-                  where completarRamaDerecha izq der = completo izq && (altura izq > altura der)
+insertarHeap f Nil = abHoja
+
+insertarHeap f ab = recAB abHoja (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> 
+        if f nodoAInsertar raiz then 
+            insertarBalanceado nodoAInsertar raiz abIzq abDer recI recD
+        else
+            insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD)) ab
+
+        where completarRamaDerecha izq der = completo izq && (altura izq >= altura der) && (esNil der || not (completo der))
+            -- raiz y nodoAInsertar pueden no ser los originales (se intercambian en caso de ser necesario)
+              insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD = if completarRamaDerecha abIzq abDer then Bin abIzq raiz (recD nodoAInsertar) else Bin (recI nodoAInsertar) raiz abDer
 
 truncar :: AB a -> Int -> AB a
 truncar = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1))))
@@ -119,6 +121,9 @@ abbConIzqYDerNilEnAlgunMomento = Bin abbDegeneradoAIzq 3 abbDegeneradoADer
 heapMayorDegeneradoAIzq = Bin (abHoja 1) 2 Nil
 -- 
 heapMayorDegeneradoADer = Bin Nil 2 (abHoja 1) -- ojo porque no seria un heap "valido" segun el orden de agregado
+-- correcciones
+casoMaloCorreccionNoABB = Bin (Bin (abHoja 1) 2 (abHoja 4)) 3 (abHoja 5)
+insertarEnRamaDerechaIgualAltura = Bin (Bin (abHoja 4) 2 (abHoja 5)) 1 (Bin (abHoja 6) 3 Nil)
 
 -- ejemplos para testear rec y fold
 sumaRecursiva :: Num a => AB a -> a
@@ -141,7 +146,8 @@ allTests = test ["ejercicio1" ~: testsEj1,
                  "ejercicio4" ~: testsEj4,
                  "ejercicio5" ~: testsEj5,
                  "ejercicio6" ~: testsEj6,
-                 "ejercicio7" ~: testsEj7]
+                 "ejercicio7" ~: testsEj7,
+                 "adicionales" ~: testsAdicionales]
 
 testsEj1 = test [
     [1,2,4,5,7] ~=? inorder abbIncompleto1,
@@ -241,6 +247,15 @@ testsEj7 = test [
 
     [2,3,4] ~=? inorder (truncar (Bin abbDegeneradoAIzq 3 (abHoja 4)) 2),
     [2,3,4] ~=? inorder (truncar (Bin (abHoja 2) 3 abbDegeneradoADer) 2)
+  ]
+
+testsAdicionales = test [
+    -- caso de esABB donde supuestamente fallaba pero no lo hace
+    False ~=? esABB casoMaloCorreccionNoABB,
+
+    -- caso de insertarHeap donde fallaba (debe insertar a la derecha a pesar de tener misma altura de sub-arboles)
+    True ~=? esHeap (<) (insertarHeap (<) insertarEnRamaDerechaIgualAltura 7),
+    altura insertarEnRamaDerechaIgualAltura ~=? altura (insertarHeap (<) insertarEnRamaDerechaIgualAltura 7)
   ]
 
 -- para correr reload y main en un solo comando
