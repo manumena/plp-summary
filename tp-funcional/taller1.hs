@@ -81,15 +81,16 @@ insertarHeap :: Ord a => (a -> a -> Bool) -> AB a -> a -> AB a
 insertarHeap f Nil = abHoja
 
 insertarHeap f ab = recAB abHoja (\raiz abIzq abDer recI recD -> (\nodoAInsertar -> 
-        if f nodoAInsertar raiz then 
-            insertarBalanceado nodoAInsertar raiz abIzq abDer recI recD
-        else
-            insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD)) ab
+    if f nodoAInsertar raiz then 
+        insertarBalanceado nodoAInsertar raiz abIzq abDer recI recD
+    else
+        insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD)) ab
 
-        where completarRamaDerecha izq der = completo izq && (altura izq >= altura der) && (esNil der || not (completo der))
-            -- raiz y nodoAInsertar pueden no ser los originales (se intercambian en caso de ser necesario)
-              insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD = if completarRamaDerecha abIzq abDer then Bin abIzq raiz (recD nodoAInsertar) else Bin (recI nodoAInsertar) raiz abDer
+    where completarRamaDerecha izq der = completo izq && (altura izq >= altura der) && (esNil der || not (completo der))
+        -- raiz y nodoAInsertar pueden no ser los originales (se intercambian en caso de ser necesario)
+          insertarBalanceado raiz nodoAInsertar abIzq abDer recI recD = if completarRamaDerecha abIzq abDer then Bin abIzq raiz (recD nodoAInsertar) else Bin (recI nodoAInsertar) raiz abDer
 
+-- EJ 7
 truncar :: AB a -> Int -> AB a
 truncar = foldAB (const Nil) (\v recI recD -> (\nivelDeCorte -> if nivelDeCorte == 0 then Nil else Bin (recI (nivelDeCorte - 1)) v (recD (nivelDeCorte - 1))))
 
